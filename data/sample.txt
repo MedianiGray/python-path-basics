@@ -1,0 +1,2 @@
+这是 data/sample.txt —— 相对路径和 pathlib 两种写法都能找到我；
+而写死的 E:\pythonProject 在本机不存在，所以绝对路径那一段会故意失败。
