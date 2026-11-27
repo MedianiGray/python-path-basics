@@ -1,0 +1,64 @@
+同步说明（2026-11-27）
+==================================================
+
+仓库：MedianiGray/python-path-basics
+站点：https://medianigray.github.io/python-path-basics/
+课件：index.html（两页，← → 翻页；截图见 课件-1-概念.png / 课件-2-实证.png）
+
+
+一、这次的文件是怎么上去的
+--------------------------------------------------
+本机解析 github.com → 57.155.223.240（污染地址），走 https 抓取/推送一律
+「Recv failure: Connection was reset」，所以 git push 在这个网络里用不了。
+但 api.github.com（20.205.243.168）和 uploads.github.com 是通的。
+
+于是改用 GitHub Contents API 直传（PUT /repos/{owner}/{repo}/contents/{path}），
+远端会正常产生 commit，效果与 push 一致，只是提交对象与本地不同。
+
+
+二、本地 git 是什么状态
+--------------------------------------------------
+path-demo/ 已 init 为 git 仓库，分支 main，origin 指向
+  https://github.com/MedianiGray/python-path-basics.git
+本地有一条根提交 65e0c67「两页可投屏课件 + 六节对比演示脚本」，包含 8 个文件。
+远端是由 API 逐文件写入的提交链，内容一致、提交对象不同（即本地与远端历史分叉）。
+
+网络恢复（git push 能连通）后，先对齐再继续开发：
+
+    cd path-demo
+    git fetch origin main
+    git reset --soft origin/main      # 保留工作区文件，只把提交基线换成远端
+    git status                        # 应该显示 clean
+
+之后就正常 git add / commit / push。
+
+
+三、以后怎么更新站点
+--------------------------------------------------
+方法 A（推荐，本机现在就能用）：双击 发布.cmd
+    ，或命令行 python tools\publish.py
+    脚本从 git 凭据管理器读 token，把所有改动过的文件按路径 PUT 上去，
+    提交后 GitHub Pages 约 30~60 秒自动重建。
+
+方法 B（网络没问题时）：正常 git push origin main
+
+
+四、内容对应关系
+--------------------------------------------------
+index.html          两页课件，深色投屏版，键盘 ← → 或点右上角按钮翻页
+课件-1-概念.png      第 1 页截图（四写法卡片 + 三种启动方式存活矩阵 + 三栏要点）
+课件-2-实证.png      第 2 页截图（demo_paths.py 六节真实输出 + 四条结论）
+demo_paths.py       六节演示脚本，可直接 python 运行
+config.json         外置配置（改这里换人，不用改 py）
+data/sample.txt     被读的目标文件
+运行结果样例.txt      本机真实输出全文
+README.md           写法对照、三种跑法、为什么 pathlib 能打包
+
+
+五、验证记录
+--------------------------------------------------
+- 仓库创建：POST /user/repos → 201
+- 文件写入：8 个文件 PUT → 200/201
+- Pages 开启：POST /repos/{repo}/pages → 201，html_url 同上
+- 站点探活：GET https://medianigray.github.io/python-path-basics/ → 200，14229 字节（= index.html）
+- 本地 push 尝试：exit 128，Connection was reset（域名污染，非权限问题）
