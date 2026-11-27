@@ -58,7 +58,19 @@ README.md           写法对照、三种跑法、为什么 pathlib 能打包
 五、验证记录
 --------------------------------------------------
 - 仓库创建：POST /user/repos → 201
-- 文件写入：8 个文件 PUT → 200/201
+- 文件写入：全部 PUT → 200/201
 - Pages 开启：POST /repos/{repo}/pages → 201，html_url 同上
-- 站点探活：GET https://medianigray.github.io/python-path-basics/ → 200，14229 字节（= index.html）
+- 站点探活：GET / → 200；/download/python-path-basics.zip → 200，329,133 字节；
+            /讲稿.md → 200；/练习/参考答案.py → 200
 - 本地 push 尝试：exit 128，Connection was reset（域名污染，非权限问题）
+
+
+六、踩过的一个坑：Pages 构建失败（已修）
+--------------------------------------------------
+现象：加进 练习/ 目录后，Pages 连续 6 次构建 status=errored，error.message 全是
+      "Page build failed."，站点仍停在旧版本 —— 新文件一律 404。
+原因：GitHub Pages 默认用 Jekyll 处理整仓库，某个文件让它构建失败（报错不告诉具体文件）。
+解法：仓库根放一个空的 .nojekyll 文件，跳过 Jekyll，直接原样发布。
+      POST /repos/{repo}/pages/builds 触发重建 → status=built，全部路径恢复 200。
+
+结论：这个仓库以后别删 .nojekyll。删了就会回到 404 + Page build failed 的状态。
