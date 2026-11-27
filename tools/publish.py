@@ -22,7 +22,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 OWNER, REPO, BRANCH = "MedianiGray", "python-path-basics", "main"
-SKIP = {".git", "__pycache__"}
+SKIP = {".git", "__pycache__", "output"}
 
 
 def token():
