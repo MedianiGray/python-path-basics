@@ -4,16 +4,26 @@
 **整个文件夹要能打包拷走**（拷 U 盘、打包进虚拟机镜像、发给同学）。
 
 在线看课件：<https://medianigray.github.io/python-path-basics/>
+整包下载（含课件、脚本、讲稿、练习）：<https://medianigray.github.io/python-path-basics/download/python-path-basics.zip>
 
 ```
 path-demo/                  （仓库名 python-path-basics，内容即此目录）
 ├─ index.html            两页可投屏课件：1 概念 / 2 实证，← → 翻页
+├─ 启动课件.cmd           双击即用浏览器打开课件（离线可投屏）
 ├─ 课件-1-概念.png        课件第 1 页截图，可直接插进笔记
 ├─ 课件-2-实证.png        课件第 2 页截图
+├─ 讲稿.md               逐页口播稿（约 20 分钟，含常见追问与作业布置）
 ├─ demo_paths.py         演示脚本（六节，逐条打印现象）
+├─ 练习/
+│   ├─ 待修.py           课堂练习：三处写法都写死了，跑不通，让学生改
+│   ├─ 参考答案.py       改好的版本，本目录 / 上一级都能跑通
+│   ├─ 练习与答案.md      练 1 判断、练 2 改代码、评分自测三条、常见错法
+│   └─ output/           参考答案跑出来的报告（可删）
 ├─ config.json           外部配置：改这里换人，不用改 py
 ├─ data/sample.txt       被读的目标文件
-└─ 运行结果样例.txt       本机真实跑出来的输出，可先看结果再跑
+├─ 运行结果样例.txt       本机真实跑出来的输出，可先看结果再跑
+├─ 发布.cmd / tools/     本机一键同步到 GitHub（api.github.com 直传）
+└─ 同步说明.txt           本机 git 状态与对齐办法
 ```
 
 ## 怎么跑，看什么
