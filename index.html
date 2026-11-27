@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Python 路径三概念 · 硬编码 / 绝对路径 / 相对路径</title>
+<style>
+  :root{
+    --bg:#070b12; --panel:#0d1523; --panel2:#0a111c; --line:rgba(88,132,180,.28);
+    --txt:#c8dbec; --dim:#7e97b0; --cyan:#3fb6e8; --warn:#e0a34a; --bad:#cf5b48; --ok:#4fbf8b;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--txt);
+    font-family:"Microsoft YaHei","PingFang SC",system-ui,sans-serif;}
+  body{display:flex;flex-direction:column;height:100vh;overflow:hidden;}
+  header{display:flex;align-items:center;gap:16px;padding:13px 28px;border-bottom:1px solid var(--line);flex:0 0 auto;}
+  .brand{display:flex;flex-direction:column;line-height:1.4;}
+  .brand b{font-size:16px;letter-spacing:2px;color:#e8f1fa;font-weight:600;}
+  .brand span{font-size:11px;color:var(--dim);letter-spacing:.8px;margin-top:1px;}
+  header .sp{flex:1;}
+  .pager{display:flex;gap:8px;}
+  .pager button{font:inherit;font-size:11.5px;color:var(--dim);background:transparent;border:1px solid var(--line);
+    padding:6px 15px;cursor:pointer;letter-spacing:.5px;}
+  .pager button.on,.pager button:hover{color:var(--cyan);border-color:var(--cyan);}
+
+  main{flex:1;position:relative;min-height:0;}
+  .slide{position:absolute;inset:0;padding:20px 28px 6px;display:none;flex-direction:column;gap:13px;overflow:hidden;}
+  .slide.on{display:flex;}
+  .h{display:flex;align-items:baseline;gap:14px;flex:0 0 auto;}
+  .h h1{margin:0;font-size:23px;letter-spacing:1px;color:#eaf3fb;font-weight:600;}
+  .h i{font-style:normal;font-size:11.5px;color:var(--dim);letter-spacing:.4px;}
+
+  /* 第一页：四张卡 + 矩阵表 */
+  .cards{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;flex:0 0 auto;}
+  .card{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);
+    padding:15px 16px;display:flex;flex-direction:column;gap:9px;height:300px;}
+  .card .tag{font-size:10.5px;letter-spacing:1.4px;color:var(--dim);}
+  .card h2{margin:0;font-size:16px;letter-spacing:.6px;color:#e9f2fb;font-weight:600;}
+  .card pre{margin:0;background:#060a11;border-left:2px solid rgba(63,182,232,.35);padding:9px 11px;
+    font-size:12px;line-height:1.8;color:#a9c6de;white-space:pre-wrap;word-break:break-all;
+    font-family:Consolas,"Courier New",monospace;}
+  .card p{margin:0;font-size:12.5px;line-height:1.9;color:#9fb6cc;}
+  .card p b{color:#d9e8f5;font-weight:600;}
+  .card .verdict{margin-top:auto;font-size:12px;letter-spacing:.3px;padding-top:9px;border-top:1px dashed var(--line);}
+  .v-bad{color:var(--bad);} .v-mid{color:var(--warn);} .v-ok{color:var(--ok);}
+
+  table{width:100%;border-collapse:collapse;font-size:12px;flex:0 0 auto;}
+  th,td{border:1px solid var(--line);padding:9px 12px;text-align:left;color:#a9c0d6;line-height:1.6;}
+  th{color:var(--dim);font-weight:400;font-size:10.5px;letter-spacing:.6px;background:rgba(13,21,35,.7);}
+  td.code,span.code{font-family:Consolas,monospace;font-size:11.5px;color:#9dc4e0;}
+  .kill{color:var(--bad);} .alive{color:var(--ok);}
+
+  /* 第一页底部：三栏要点 */
+  .strip{flex:1;display:grid;grid-template-columns:repeat(3,1fr);gap:13px;min-height:0;}
+  .strip div{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);
+    padding:14px 16px;display:flex;flex-direction:column;gap:8px;overflow:hidden;}
+  .strip div b{font-size:13px;color:#e6f0fa;letter-spacing:.4px;font-weight:600;}
+  .strip div p{margin:0;font-size:12px;line-height:1.95;color:#9fb6cc;}
+  .strip div code{font-family:Consolas,monospace;font-size:11.5px;color:#9dc4e0;}
+
+  /* 第二页：3×2 实证卡片 */
+  .grid{flex:1;display:grid;grid-template-columns:1.15fr 1fr;grid-template-rows:repeat(3,1fr);gap:12px;min-height:0;}
+  .box{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);
+    padding:13px 15px;display:flex;flex-direction:column;gap:6px;overflow:hidden;min-height:0;}
+  .box h3{margin:0;font-size:13.5px;letter-spacing:.5px;color:#e3eefa;font-weight:600;
+    display:flex;align-items:center;gap:8px;}
+  .box h3 em{font-style:normal;font-size:10px;letter-spacing:1px;color:var(--cyan);border:1px solid rgba(63,182,232,.4);padding:1px 5px;}
+  .box .ln{font-family:Consolas,"Courier New",monospace;font-size:11.8px;line-height:1.85;color:#9fc0d8;white-space:pre-wrap;}
+  .box .ln .ok{color:var(--ok);} .box .ln .er{color:var(--bad);} .box .ln .cy{color:var(--cyan);} .box .ln .hd{color:#e8c98a;}
+  .box .say{margin-top:auto;font-size:11.5px;line-height:1.75;color:#8ea7bd;border-top:1px dashed var(--line);padding-top:7px;}
+
+  footer{display:flex;align-items:center;gap:10px;padding:8px 28px 11px;font-size:10.5px;color:#526a80;
+    border-top:1px solid var(--line);flex:0 0 auto;}
+  footer .sp{flex:1;}
+
+  @media (max-width:1280px){
+    .cards{grid-template-columns:repeat(2,1fr);}
+    .card{height:auto;min-height:240px;}
+    .grid{grid-template-columns:1fr;grid-template-rows:repeat(6,auto);}
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <b>PYTHON 路径三概念</b>
+    <span>硬编码 / 绝对路径 / 相对路径 / pathlib 规范写法 · 实训打包场景</span>
+  </div>
+  <div class="sp"></div>
+  <div class="pager">
+    <button id="p1" class="on">1 · 概念</button>
+    <button id="p2">2 · 实证</button>
+  </div>
+</header>
+
+<main>
+  <!-- ============ 第 1 页 ============ -->
+  <section class="slide on" id="s1">
+    <div class="h"><h1>四种写法，决定项目能不能被打包搬走</h1><i>场景：一个 py + data/ + config.json，整个文件夹要拷进 U 盘 / 虚拟机镜像</i></div>
+
+    <div class="cards">
+      <div class="card">
+        <div class="tag">01 · 概念</div>
+        <h2>硬编码</h2>
+        <pre>NAME = "覃祖悦"
+print(NAME)</pre>
+        <p>值直接写死在源码里。要换内容，必须打开源码改、再保存运行。</p>
+        <div class="verdict v-mid">值能跑，但改不动</div>
+      </div>
+
+      <div class="card">
+        <div class="tag">02 · 路径</div>
+        <h2>绝对路径</h2>
+        <pre>open(r"E:\pythonProject\a.txt")</pre>
+        <p>从盘符根目录开始的完整地址，定位唯一、一眼知道文件在哪。</p>
+        <div class="verdict v-bad">换电脑 / 换盘 / 换文件夹即失效</div>
+      </div>
+
+      <div class="card">
+        <div class="tag">03 · 路径</div>
+        <h2>相对路径</h2>
+        <pre>open("data/a.txt")
+open("../data/a.txt")</pre>
+        <p>以<b>当前工作目录 cwd</b> 为起点找文件，目录结构不变就能用。</p>
+        <div class="verdict v-mid">cwd 一变就找错文件</div>
+      </div>
+
+      <div class="card">
+        <div class="tag">04 · 推荐</div>
+        <h2>pathlib 规范写法</h2>
+        <pre>BASE = Path(__file__).resolve().parent
+p = BASE / "data" / "a.txt"</pre>
+        <p>路径由脚本自己算：不写盘符、不依赖 cwd，跨 Windows / 欧拉。</p>
+        <div class="verdict v-ok">打包即用，发同学也不炸</div>
+      </div>
+    </div>
+
+    <table>
+      <tr>
+        <th style="width:24%">启动方式 \ 写法</th>
+        <th>硬编码值</th><th>写死绝对路径 E:\…</th><th>相对路径 data/a.txt</th><th>pathlib BASE/"data"</th>
+      </tr>
+      <tr>
+        <td>在脚本目录里 <span class="code">python demo.py</span></td>
+        <td class="kill">换内容要改码</td><td class="kill">E 盘存在才行</td><td class="alive">✔ 能读</td><td class="alive">✔ 能读</td>
+      </tr>
+      <tr>
+        <td>从上一级 <span class="code">python dir\demo.py</span></td>
+        <td class="kill">换内容要改码</td><td class="kill">✘ 炸</td><td class="kill">✘ cwd 不对</td><td class="alive">✔ 能读</td>
+      </tr>
+      <tr>
+        <td>整个文件夹拷到别的机器</td>
+        <td class="kill">换内容要改码</td><td class="kill">✘ 炸</td><td class="alive">✔ 结构没变就能读</td><td class="alive">✔ 能读</td>
+      </tr>
+    </table>
+
+    <div class="strip">
+      <div>
+        <b>① 看到这三样，就是硬编码</b>
+        <p>· 姓名 / 学号 / 端口 / 密钥直接写在赋值里：<code>NAME = "覃祖悦"</code></p>
+        <p>· 盘符或用户目录出现在字符串里：<code>"C:\Users\…"</code>、<code>"E:\pythonProject"</code></p>
+        <p>· 同一个项目换个目录就报错——改一次内容要改一次源码</p>
+        <p style="color:#7e97b0">判断法：这段代码交给同学、换台电脑，还能原样跑吗？</p>
+      </div>
+      <div>
+        <b>② 绝对路径什么时候是对的</b>
+        <p>· 路径来自命令行参数：<code>sys.argv[1]</code></p>
+        <p>· 路径来自环境变量或配置文件</p>
+        <p>· 路径来自用户在文件对话框里自己选的位置</p>
+        <p style="color:#7e97b0">外部给的就该用绝对路径；错在把它写进源码。</p>
+      </div>
+      <div>
+        <b>③ 一句话记法</b>
+        <p>· 值放 <code>config.json</code>，别写死在 py 里</p>
+        <p>· 路径靠 <code>Path(__file__).resolve().parent</code> 自己算</p>
+        <p>· 非要相对路径，先 <code>os.chdir(BASE)</code> 站好位置</p>
+        <p style="color:#7e97b0">三件事做完，拷 U 盘、打包进虚拟机镜像都能直接跑。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 第 2 页 ============ -->
+  <section class="slide" id="s2">
+    <div class="h"><h1>本机实测：谁的代码活着</h1><i>demo_paths.py 六节逐条打印，下面是真实输出摘录（非示例、非伪造）</i></div>
+
+    <div class="grid">
+      <div class="box">
+        <h3><em>01</em>硬编码：值写死在源码里</h3>
+        <div class="ln">NAME = "覃祖悦"  →  print 就是 覃祖悦</div>
+        <div class="ln cy">[对照] config.json → 2502xxxx · 覃祖悦 · 网络工程</div>
+        <div class="ln">改配置文件就换人，py 一个字不用动</div>
+        <div class="ln">对照写法：<span class="cy">NAME = cfg["name"]</span></div>
+        <div class="say">硬编码的代价不是错，是<b style="color:#dbe9f6">不可配置</b>：每次改内容都要重新提交源码。</div>
+      </div>
+
+      <div class="box">
+        <h3><em>04</em>pathlib：cwd 变了也不受影响</h3>
+        <div class="ln">BASE = Path(__file__).resolve().parent</div>
+        <div class="ln ok">os.chdir(临时目录) 后照样读到正文 ✔</div>
+        <div class="ln">不写盘符，不靠 cwd，路径由脚本自身位置算出来</div>
+        <div class="ln">复现：<span class="cy">python demo_paths.py</span> 第 4 节</div>
+        <div class="say">欧拉 / Linux 同一段可用，<span class="code">Path</span> 自动处理 <span class="code">/</span> 与 <span class="code">\</span>。</div>
+      </div>
+
+      <div class="box">
+        <h3><em>02</em>绝对路径（写死）：换机器就炸</h3>
+        <div class="ln">HARD_ABS = r"E:\pythonProject\data\sample.txt"</div>
+        <div class="ln er">读失败 → OSError  本机没有 E: 盘，也没有该目录</div>
+        <div class="ln">真实位置：…\path-demo\data\sample.txt</div>
+        <div class="ln">对照：<span class="cy">HARD_ABS = sys.argv[1]</span> 由外部传参就合法</div>
+        <div class="say">路径若来自参数或配置，用绝对路径<b style="color:#dbe9f6">是对的</b>；错在写进源码。</div>
+      </div>
+
+      <div class="box">
+        <h3><em>05</em>实证：整个文件夹复制到别处再跑</h3>
+        <div class="ln">已复制到 …\Temp\plant_k0edmlph\project_copy</div>
+        <div class="ln ok">pathlib 版    → 读到 data/sample.txt 正文 ✔</div>
+        <div class="ln er">写死绝对路径版 → OSError（照样炸） ✘</div>
+        <div class="ln">两边跑的是同一份源码，只差路径求法</div>
+        <div class="say">这一步就是"打包虚拟机 / 拷 U 盘发给同学"的最小复现。</div>
+      </div>
+
+      <div class="box">
+        <h3><em>03</em>相对路径：跟着 cwd 走</h3>
+        <div class="ln ok">在脚本目录里 open("data/sample.txt") → ✔</div>
+        <div class="ln">然后 os.chdir(临时目录) 再读 …</div>
+        <div class="ln er">open("data/sample.txt") → FileNotFoundError ✘</div>
+        <div class="ln">复现：先 cd 进脚本目录，再 <span class="cy">python demo_paths.py</span></div>
+        <div class="say">坑不在"相对"，在 cwd：快捷方式、任务计划、IDE、从别处敲 python 都会变。</div>
+      </div>
+
+      <div class="box" style="border-color:rgba(63,182,232,.45)">
+        <h3><em>结论</em>三句话带走</h3>
+        <div class="ln">1. 别把值写死，外置到 config.json</div>
+        <div class="ln">2. 别把路径写死，用 Path(__file__).parent</div>
+        <div class="ln">3. 避免裸相对路径，或先显式 os.chdir(BASE)</div>
+        <div class="ln">4. 打包 exe 再兜底：getattr(sys, "_MEIPASS", BASE)</div>
+        <div class="say">实验代码：demo_paths.py，可重复跑；输出全文见 运行结果样例.txt。</div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <span>覃祖悦 · 网络工程技术（本）2502 · 广西农业职业技术大学信息工程学院</span>
+  <span class="sp"></span>
+  <span>← → 翻页 · 代码与输出取自 demo_paths.py 本机实跑</span>
+</footer>
+
+<script>
+  var cur = 1;
+  function show(n){
+    cur = n;
+    document.getElementById('s1').classList.toggle('on', n === 1);
+    document.getElementById('s2').classList.toggle('on', n === 2);
+    document.getElementById('p1').classList.toggle('on', n === 1);
+    document.getElementById('p2').classList.toggle('on', n === 2);
+  }
+  document.getElementById('p1').onclick = function(){ show(1); };
+  document.getElementById('p2').onclick = function(){ show(2); };
+  window.addEventListener('keydown', function(e){
+    if (e.key === 'ArrowRight' || e.key === ' ') show(cur === 1 ? 2 : 1);
+    if (e.key === 'ArrowLeft') show(cur === 2 ? 1 : 2);
+  });
+</script>
+</body>
+</html>
